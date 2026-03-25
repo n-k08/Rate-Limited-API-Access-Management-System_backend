@@ -2,35 +2,42 @@ const RateLimit = require("../models/RateLimit");
 const ApiUsage = require("../models/ApiUsage");
 
 module.exports = async (req, res, next) => {
-  const rule = await RateLimit.findOne({ role: req.user.role });
-  if (!rule) return next();
+  const userId = req.user.id;
+
+  const limit = await RateLimit.findOne();
+  if (!limit) return res.status(500).json({ message: "Rate limit not set" });
+
+  let usage = await ApiUsage.findOne({ userId });
 
   const now = new Date();
-  const windowStart = new Date(now - rule.windowMinutes * 60000);
-
-  let usage = await ApiUsage.findOne({
-    userId: req.user.id,
-    endpoint: req.originalUrl,
-    windowStart: { $gte: windowStart }
-  });
+  const windowMs = limit.window * 60 * 1000;
 
   if (!usage) {
-    await ApiUsage.create({
-      userId: req.user.id,
-      endpoint: req.originalUrl,
+    usage = await ApiUsage.create({
+      userId,
       count: 1,
-      windowStart: now
+      startTime: now,
     });
     return next();
   }
 
-  if (usage.count >= rule.maxRequests) {
+  // Reset window
+  if (now - usage.startTime > windowMs) {
+    usage.count = 1;
+    usage.startTime = now;
+    await usage.save();
+    return next();
+  }
+
+  // Check limit
+  if (usage.count >= limit.requests) {
     return res.status(429).json({
-      message: "Rate limit exceeded"
+      message: "Rate limit exceeded. Try again later.",
     });
   }
 
-  usage.count++;
+  usage.count += 1;
   await usage.save();
+
   next();
 };

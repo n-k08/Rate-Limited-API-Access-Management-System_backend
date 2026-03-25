@@ -2,18 +2,22 @@ const RateLimit = require("../models/RateLimit");
 const ApiUsage = require("../models/ApiUsage");
 
 exports.setRateLimit = async (req, res) => {
-  const { role, maxRequests, windowMinutes } = req.body;
+  const { requests, window } = req.body;
 
-  await RateLimit.findOneAndUpdate(
-    { role },
-    { maxRequests, windowMinutes },
-    { upsert: true }
-  );
+  let limit = await RateLimit.findOne();
 
-  res.json({ message: "Rate limit saved" });
+  if (limit) {
+    limit.requests = requests;
+    limit.window = window;
+    await limit.save();
+  } else {
+    await RateLimit.create({ requests, window });
+  }
+
+  res.json({ message: "Rate limit updated" });
 };
 
 exports.getAllUsage = async (req, res) => {
-  const data = await ApiUsage.find();
-  res.json(data);
+  const usage = await ApiUsage.find();
+  res.json(usage);
 };

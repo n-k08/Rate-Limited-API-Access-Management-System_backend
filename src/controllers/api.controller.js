@@ -1,10 +1,10 @@
 const ApiUsage = require("../models/ApiUsage");
 
-exports.protectedApi = (req, res) => {
-  res.json({ message: "Protected API accessed" });
+exports.protectedAPI = async (req, res) => {
+  res.json({ message: "API accessed successfully" });
 };
 
-exports.myUsage = async (req, res) => {
-  const usage = await ApiUsage.find({ userId: req.user.id });
+exports.getMyUsage = async (req, res) => {
+  const usage = await ApiUsage.findOne({ userId: req.user.id });
   res.json(usage);
 };
