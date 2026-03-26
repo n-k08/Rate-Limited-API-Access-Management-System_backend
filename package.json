@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Rate Limited API Access Management System Backend",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
+    "scripts": {
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
