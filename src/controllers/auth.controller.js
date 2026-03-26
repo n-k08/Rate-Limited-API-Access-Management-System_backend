@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
-const User = require("../models/user"); // make sure file exists
-
+const User = require("../models/user.model");
 // 🔐 REGISTER
 exports.register = async (req, res) => {
   try {
