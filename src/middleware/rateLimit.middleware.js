@@ -1,8 +1,9 @@
 const RateLimit = require("../models/RateLimit");
 const ApiUsage = require("../models/ApiUsage");
+const mongoose = require("mongoose");
 
 module.exports = async (req, res, next) => {
-  const userId = req.user.id;
+  const userId = mongoose.Types.ObjectId(req.user.id);
 
   const limit = await RateLimit.findOne();
   if (!limit) return res.status(500).json({ message: "Rate limit not set" });
